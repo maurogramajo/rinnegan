@@ -57,6 +57,15 @@
 
 /*==================[macros and definitions]=================================*/
 
+#define RGB_RPORT	0
+#define RGB_RPIN	22
+
+#define RGB_GPORT	3
+#define RGB_GPIN	25
+
+#define RGB_BPORT	3
+#define RGB_BPIN	26
+
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
@@ -78,14 +87,43 @@ static void initHardware(void)
 
     Board_Init();
 
-    Board_LED_Set(0, false);
+    Chip_GPIO_SetPinDIR(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
+    Chip_GPIO_SetPinDIR(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
+    Chip_GPIO_SetPinDIR(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
+
+    Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
+    Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
+    Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
 }
 
 static void task(void * a)
 {
+	int switcher = 0;
 	while (1) {
-		Board_LED_Toggle(0);
-		vTaskDelay(500 / portTICK_RATE_MS);
+		switch(switcher)
+		{
+		case 0:
+			switcher++;
+			Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, false);
+			Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
+			vTaskDelay(500 / portTICK_RATE_MS);
+			break;
+		case 1:
+			switcher++;
+			Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
+			Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, false);
+			vTaskDelay(500 / portTICK_RATE_MS);
+			break;
+		case 2:
+			switcher=0;
+			Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
+			Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, false);
+			vTaskDelay(500 / portTICK_RATE_MS);
+			break;
+		default:
+			break;
+		}
+
 	}
 }
 
