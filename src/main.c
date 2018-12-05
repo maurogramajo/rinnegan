@@ -52,29 +52,44 @@
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
+#include "queue.h"
 
 #include "main.h"
 
 /*==================[macros and definitions]=================================*/
 
-#define RGB_RPORT	0
-#define RGB_RPIN	22
+#define RPORT	0
+#define RPIN	22
 
-#define RGB_GPORT	3
-#define RGB_GPIN	25
+#define GPORT	3
+#define GPIN	25
 
-#define RGB_BPORT	3
-#define RGB_BPIN	26
+#define BPORT	3
+#define BPIN	26
 
 /*==================[internal data declaration]==============================*/
+//xQueueHandle queue = 0;
+//xSemaphoreHandle rsignal = 0;
+//xSemaphoreHandle gsignal = 0;
+//xSemaphoreHandle bsignal = 0;
 
+typedef struct
+{
+	int port;
+	int pin;
+} typedef_portpin;
+
+enum RGB{ R=0, G, B };
+
+typedef_portpin led[3];
 /*==================[internal functions declaration]=========================*/
 
 /** @brief hardware initialization function
  *	@return none
  */
 static void initHardware(void);
-
+//static void Maquina(void *);
+static void ToogleLed(typedef_portpin *);
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
@@ -87,43 +102,52 @@ static void initHardware(void)
 
     Board_Init();
 
-    Chip_GPIO_SetPinDIR(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
-    Chip_GPIO_SetPinDIR(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
-    Chip_GPIO_SetPinDIR(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
+    Chip_GPIO_SetPinDIR(LPC_GPIO, RPORT, RPIN, true);
+    Chip_GPIO_SetPinDIR(LPC_GPIO, GPORT, GPIN, true);
+    Chip_GPIO_SetPinDIR(LPC_GPIO, BPORT, BPIN, true);
 
-    Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
-    Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
-    Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
+    Chip_GPIO_SetPinState(LPC_GPIO, RPORT, RPIN, true);
+    Chip_GPIO_SetPinState(LPC_GPIO, GPORT, GPIN, true);
+    Chip_GPIO_SetPinState(LPC_GPIO, BPORT, BPIN, true);
 }
 
-static void task(void * a)
-{
-	int switcher = 0;
-	while (1) {
-		switch(switcher)
-		{
-		case 0:
-			switcher++;
-			Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, false);
-			Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
-			vTaskDelay(500 / portTICK_RATE_MS);
-			break;
-		case 1:
-			switcher++;
-			Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
-			Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, false);
-			vTaskDelay(500 / portTICK_RATE_MS);
-			break;
-		case 2:
-			switcher=0;
-			Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
-			Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, false);
-			vTaskDelay(500 / portTICK_RATE_MS);
-			break;
-		default:
-			break;
-		}
+//static void Maquina(void *a)
+//{
+//	int switcher = 0;
+//	while (1) {
+////		switch(switcher)
+////		{
+////		case 0:
+////			switcher++;
+////			Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, false);
+////			Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, true);
+////			vTaskDelay(500 / portTICK_RATE_MS);
+////			break;
+////		case 1:
+////			switcher++;
+////			Chip_GPIO_SetPinState(LPC_GPIO, RGB_RPORT, RGB_RPIN, true);
+////			Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, false);
+////			vTaskDelay(500 / portTICK_RATE_MS);
+////			break;
+////		case 2:
+////			switcher=0;
+////			Chip_GPIO_SetPinState(LPC_GPIO, RGB_GPORT, RGB_GPIN, true);
+////			Chip_GPIO_SetPinState(LPC_GPIO, RGB_BPORT, RGB_BPIN, false);
+////			vTaskDelay(500 / portTICK_RATE_MS);
+////			break;
+////		default:
+////			break;
+////		}
+//
+//	}
+//}
 
+static void ToogleLed(typedef_portpin *p)
+{
+	while(1)
+	{
+		Chip_GPIO_SetPinToggle(LPC_GPIO, p->port, p->pin);
+		vTaskDelay((p->pin - 21)*500 / portTICK_RATE_MS);
 	}
 }
 
@@ -133,7 +157,24 @@ int main(void)
 {
 	initHardware();
 
-	xTaskCreate(task, (const char *)"task", configMINIMAL_STACK_SIZE*2, 0, tskIDLE_PRIORITY+1, 0);
+	led[R].port = RPORT;
+	led[R].pin = RPIN;
+
+	led[G].port = GPORT;
+	led[G].pin = GPIN;
+
+	led[B].port = BPORT;
+	led[B].pin = BPIN;
+
+//	queue = xQueueCreate(3, sizeof(int));
+//	vSemaphoreCreateBinary(rsignal);
+//	vSemaphoreCreateBinary(gsignal);
+//	vSemaphoreCreateBinary(bsignal);
+//
+//	xTaskCreate(Maquina, (const char *)"MaquinaDeEstados", configMINIMAL_STACK_SIZE*2, 0, tskIDLE_PRIORITY+1, 0);
+	xTaskCreate(ToogleLed, (const char *)"ToogleR", configMINIMAL_STACK_SIZE*2, &led[R], tskIDLE_PRIORITY+1, 0);
+	xTaskCreate(ToogleLed, (const char *)"ToogleG", configMINIMAL_STACK_SIZE*2, &led[G], tskIDLE_PRIORITY+1, 0);
+	xTaskCreate(ToogleLed, (const char *)"ToogleB", configMINIMAL_STACK_SIZE*2, &led[B], tskIDLE_PRIORITY+1, 0);
 
 	vTaskStartScheduler();
 
