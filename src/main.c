@@ -102,9 +102,36 @@ static void initHardware(void)
 
     Board_Init();
 
-    Chip_GPIO_SetPinDIR(LPC_GPIO, RPORT, RPIN, true);
-    Chip_GPIO_SetPinDIR(LPC_GPIO, GPORT, GPIN, true);
-    Chip_GPIO_SetPinDIR(LPC_GPIO, BPORT, BPIN, true);
+//    Chip_GPIO_SetPinDIR(LPC_GPIO, RPORT, RPIN, true);
+//    Chip_GPIO_SetPinDIR(LPC_GPIO, GPORT, GPIN, true);
+//    Chip_GPIO_SetPinDIR(LPC_GPIO, BPORT, BPIN, true);
+//
+//    /* Timer */
+//       Chip_TIMER_Init(LPC_TIMER1);
+//       Chip_TIMER_PrescaleSet(LPC_TIMER1,
+//    #ifdef lpc1769
+//             Chip_Clock_GetPeripheralClockRate(SYSCTL_PCLK_TIMER1) / 1000000 - 1
+//    #else
+//    		 Chip_Clock_GetRate(CLK_MX_TIMER1) / 1000000 - 1
+//    #endif
+//       );
+//
+//       /* Match 0 (period) */
+//       Chip_TIMER_MatchEnableInt(LPC_TIMER1, 0);
+//       Chip_TIMER_ResetOnMatchEnable(LPC_TIMER1, 0);
+//       Chip_TIMER_StopOnMatchDisable(LPC_TIMER1, 0);
+//       Chip_TIMER_SetMatch(LPC_TIMER1, 0, 1000);
+//
+//       /* Match 1 (duty) */
+//       Chip_TIMER_MatchEnableInt(LPC_TIMER1, 1);
+//       Chip_TIMER_ResetOnMatchDisable(LPC_TIMER1, 1);
+//       Chip_TIMER_StopOnMatchDisable(LPC_TIMER1, 1);
+//       Chip_TIMER_SetMatch(LPC_TIMER1, 1, 100);
+//
+//       Chip_TIMER_Reset(LPC_TIMER1);
+//       Chip_TIMER_Enable(LPC_TIMER1);
+//
+//       NVIC_EnableIRQ(TIMER1_IRQn);
 }
 
 static void Maquina(void *a)
@@ -160,6 +187,18 @@ static void ToogleLed(void *p)
 	}
 }
 
+//void TIMER1_IRQHandler(void)
+//{
+//   if (Chip_TIMER_MatchPending(LPC_TIMER1, 0)) {
+//      Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
+//      Board_LED_Set(0, 1);
+//   }
+//   if (Chip_TIMER_MatchPending(LPC_TIMER1, 1)) {
+//      Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+//      Board_LED_Set(0, 0);
+//   }
+//}
+
 /*==================[external functions definition]==========================*/
 
 int main(void)
@@ -184,7 +223,15 @@ int main(void)
 
 	vTaskStartScheduler();
 
+//	int duty = 100;
 	while (1) {
+//		duty += 100;
+//	    if(duty == 1000) duty = 100;
+//
+//	    Chip_TIMER_SetMatch(LPC_TIMER1, 1, duty);
+//	    Chip_TIMER_Reset(LPC_TIMER1);
+//	    Chip_TIMER_ClearMatch(LPC_TIMER1, 1);
+//	    Chip_TIMER_ClearMatch(LPC_TIMER1, 0);
 	}
 }
 
